@@ -1,25 +1,36 @@
-import express from "express";
-import dotenv from "dotenv";
-import bodyParser from "body-parser";
+// Import express
+import express from "express"
 
-import * as home from "./controllers/home.controller";
+// Import everything for ENVs
+import dotenv from "dotenv"
+import bodyParser from "body-parser"
 
-dotenv.config();
+import * as home from "./controllers/home.controller"
 
-const app = express();
+import cors from "cors"
+import { createServer } from "http"
+import { Server } from "socket.io"
 
-app.set("port", process.env.SERVER_PORT || 3000);
-app.use(bodyParser.json());
-app.use(bodyParser.urlencoded({ extended: true }));
-app.get("/", home.index);
+// ENV Variables
+dotenv.config()
 
-app.listen(app.get("port"), () => {
-  console.log(
-    "App is running at http://localhost:%d in %s mode",
-    app.get("port"),
-    app.get("env")
-  );
-  console.log("Press CTRL-C to stop\n");
-});
+// Set app things
+const app = express()
+app.use(cors({ origin: "*" }))
+app.set("port", process.env.SERVER_PORT || 3000)
+app.use(bodyParser.json())
+app.use(bodyParser.urlencoded({ extended: true }))
+app.get("/", home.index)
 
-export default app;
+// Create http server
+const httpServer = createServer(app)
+
+const io = new Server(httpServer)
+
+io.on("connection", () => {
+  console.log("[Server] Sockets Connected")
+})
+
+httpServer.listen(3000)
+
+export default app
